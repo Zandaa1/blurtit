@@ -1,0 +1,17 @@
+{
+  "short_name": "Blurt It!",
+  "name": "Blurt It: The #1 App For Topic Reviews!",
+  "display": "standalone",
+  "id": "/?source=pwa",
+  "start_url": "/?source=pwa",
+  "icons": [
+      {
+          "src": "apple-touch-icon.png",
+          "sizes": "any",
+          "type": "image/png",
+          "purpose": "any"
+      }
+  ]
+}
+
+  
