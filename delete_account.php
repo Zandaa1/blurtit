@@ -166,11 +166,3 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </script>
 </body>
 </html>
-<?php
-   // Start the session
-   session_start();
-
-   if(!isset($_SESSION['login_user'])){
-      header("location: login.php");
-      die();
-   }
