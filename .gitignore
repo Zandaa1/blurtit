@@ -43,3 +43,6 @@ temp/
 
 # Build outputs (keep your source CSS, ignore compiled CSS if you want)
 # css/output.css  # Uncomment this if you don't want to commit compiled CSS
+
+# Development helpers
+# start-tailwind.bat  # Uncomment if you don't want to commit the batch file
