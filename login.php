@@ -1,3 +1,30 @@
+<?php 
+
+include("config.php");
+session_start();
+$error = '';
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $username = mysqli_real_escape_string($link, $_POST['username']);
+    $password = mysqli_real_escape_string($link, $_POST['password']);
+
+    $sql = "SELECT * FROM users WHERE username = '$username' AND password = '$password'";
+    $result = mysqli_query($link, $sql);
+    $count = mysqli_num_rows($result);
+
+    if ($count == 1) {
+        $row = mysqli_fetch_assoc($result);
+        $_SESSION['login_user'] = $username;
+
+        header("location: index.php");
+        exit();
+    } else {
+        $error = "Invalid login. Try again!";
+    }
+}
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
   <head>

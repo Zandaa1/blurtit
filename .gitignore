@@ -41,6 +41,9 @@ pids/
 tmp/
 temp/
 
+# AI Context Files
+ai_context/
+
 # Build outputs (keep your source CSS, ignore compiled CSS if you want)
 # css/output.css  # Uncomment this if you don't want to commit compiled CSS
 

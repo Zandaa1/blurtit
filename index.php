@@ -1,3 +1,11 @@
+<?php
+include('session.php');
+include('config.php');
+
+$user_id = $_SESSION['id'];
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
