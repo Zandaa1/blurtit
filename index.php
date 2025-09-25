@@ -66,7 +66,7 @@ $user_id = $_SESSION['id'];
         class="flex-1 flex flex-col overflow-y-auto px-4 pt-10 pb-40 md:px-6 md:pt-12 md:pb-32"
       >
         <h1 class="animate__animated animate__fadeInDown text-2xl text-center font-extrabold text-gray-900 mb-8">
-          Welcome back, {name}!
+          Welcome back, <?php echo htmlspecialchars($user_nickname); ?>!
         </h1>
 
         <form

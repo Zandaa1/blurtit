@@ -1,7 +1,32 @@
 <?php 
 require_once('config.php');
+session_start();
 
+$error = '';
+$success = '';
 
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $nickname = mysqli_real_escape_string($link, $_POST['nickname']);
+    $username = mysqli_real_escape_string($link, $_POST['username']);
+    $password = mysqli_real_escape_string($link, $_POST['password']);
+    
+    // Check if username already exists
+    $check_sql = "SELECT * FROM users WHERE username = '$username'";
+    $check_result = mysqli_query($link, $check_sql);
+    
+    if (mysqli_num_rows($check_result) > 0) {
+        $error = "Username already exists! Please choose another.";
+    } else {
+        // Insert new user
+        $insert_sql = "INSERT INTO users (username, password, nickname) VALUES ('$username', '$password', '$nickname')";
+        
+        if (mysqli_query($link, $insert_sql)) {
+            $success = "Account created successfully! You can now login.";
+        } else {
+            $error = "Error creating account. Please try again.";
+        }
+    }
+}
 
 ?>
 
@@ -50,6 +75,18 @@ require_once('config.php');
           <h1 class="text-3xl font-bold text-gray-900">Sign up</h1>
           <p class="text-gray-500 mt-1">Create an account to get started</p>
         </div>
+
+        <?php if($error): ?>
+        <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+          <?php echo $error; ?>
+        </div>
+        <?php endif; ?>
+
+        <?php if($success): ?>
+        <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+          <?php echo $success; ?>
+        </div>
+        <?php endif; ?>
 
         <form action="#" method="POST" class="space-y-5">
           <div>

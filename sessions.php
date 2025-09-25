@@ -2,6 +2,11 @@
 // test sessions here
 $testSessionCount = 1;
 
+include('session.php');
+include('config.php');
+
+$user_id = $_SESSION['id'];
+
 ?>
 
 
