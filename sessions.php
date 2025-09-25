@@ -1,6 +1,6 @@
 <?php 
 // test sessions here
-$testSessionCount = 1;
+$testSessionCount = 0;
 
 include('session.php');
 include('config.php');
