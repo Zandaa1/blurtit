@@ -3,6 +3,7 @@ include('session.php');
 include('config.php');
 
 $user_id = $_SESSION['id'];
+$user_nickname = $_SESSION['nickname'];
 
 ?>
 

@@ -15,6 +15,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($count == 1) {
         $row = mysqli_fetch_assoc($result);
         $_SESSION['login_user'] = $username;
+        $_SESSION['id'] = $row['id'];
+        $_SESSION['nickname'] = $row['nickname'];
 
         header("location: index.php");
         exit();
