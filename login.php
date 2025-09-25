@@ -3,12 +3,6 @@
 include("config.php");
 session_start();
 $error = '';
-$success = '';
-
-// Check if account was deleted
-if (isset($_GET['deleted']) && $_GET['deleted'] == '1') {
-    $success = "Your account has been successfully deleted. Thank you for using Blurt It!";
-}
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = mysqli_real_escape_string($link, $_POST['username']);
@@ -21,8 +15,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($count == 1) {
         $row = mysqli_fetch_assoc($result);
         $_SESSION['login_user'] = $username;
-        $_SESSION['id'] = $row['id'];
-        $_SESSION['nickname'] = $row['nickname'];
 
         header("location: index.php");
         exit();
@@ -103,18 +95,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         >
           Welcome!
         </h1>
-
-        <?php if($error): ?>
-        <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-          <?php echo $error; ?>
-        </div>
-        <?php endif; ?>
-
-        <?php if($success): ?>
-        <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
-          <?php echo $success; ?>
-        </div>
-        <?php endif; ?>
 
         <form action="#" method="POST" class="w-full">
           <div class="space-y-4">
