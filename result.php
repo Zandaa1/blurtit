@@ -339,11 +339,6 @@ function e(string $value): string
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Blurt It! Results</title>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/gh/philfung/add-to-homescreen@3.4/dist/add-to-homescreen.min.css"
-    />
-    <script src="https://cdn.jsdelivr.net/gh/philfung/add-to-homescreen@3.4/dist/add-to-homescreen.min.js"></script>
     <link rel="manifest" crossorigin="use-credentials" href="manifest.json" />
     <link
       rel="stylesheet"
@@ -711,18 +706,6 @@ function e(string $value): string
           animateProgressBar(scoreValue, 1600);
         }
 
-        window.AddToHomeScreenInstance = window.AddToHomeScreen({
-          appName: 'Blurt It!',
-          appNameDisplay: 'standalone',
-          appIconUrl: 'apple-touch-icon.png',
-          assetUrl: 'https://cdn.jsdelivr.net/gh/philfung/add-to-homescreen@3.4/dist/assets/img/',
-          maxModalDisplayCount: 0,
-          displayOptions: { showMobile: true, showDesktop: true },
-          allowClose: true,
-          showArrow: true,
-        });
-
-        window.AddToHomeScreenInstance.show('en');
       });
     </script>
   </body>

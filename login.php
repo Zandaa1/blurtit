@@ -51,6 +51,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       rel="stylesheet"
     />
     <!-- Add to Home Screen -->
+    <link rel="manifest" crossorigin="use-credentials" href="manifest.json" />
     <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/gh/philfung/add-to-homescreen@3.4/dist/add-to-homescreen.min.css"
