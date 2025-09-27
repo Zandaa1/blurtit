@@ -77,6 +77,7 @@ $user_nickname = $_SESSION['nickname'] ?? 'Learner';
       <main
         class="flex-1 flex flex-col overflow-y-auto px-4 pt-10 pb-13 md:px-6 md:pt-12 md:pb-32"
       >
+
         <h1 class="animate__animated animate__fadeInDown text-2xl text-center font-extrabold text-gray-900 mb-8">
           Welcome back, <?php echo htmlspecialchars($user_nickname); ?>!
         </h1>
@@ -125,6 +126,15 @@ $user_nickname = $_SESSION['nickname'] ?? 'Learner';
           >
             Submit
           </button>
+
+          <div class="flex items-center mt-6 text-xs text-gray-500 bg-gray-100 rounded-lg px-3 py-2">
+            <svg class="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01" />
+            </svg>
+            This content was generated using AI and may contain inaccuracies. Please verify important information.
+          </div>
+
         </form>
       </main>
 
