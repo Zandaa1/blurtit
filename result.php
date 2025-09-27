@@ -160,42 +160,63 @@ if ($sessionData !== null && isset($sessionData['mistakes']) && is_array($sessio
 }
 
 $suggestions = [];
+$mainSuggestion = null;
+$improvementItems = [];
+
 if ($sessionData !== null && isset($sessionData['suggestions'])) {
-    $rawSuggestions = $sessionData['suggestions'];
-    if (is_array($rawSuggestions)) {
-        foreach ($rawSuggestions as $item) {
-            $trimmed = trim((string) $item);
-            if ($trimmed !== '') {
-                $suggestions[] = $trimmed;
-            }
-        }
-    } elseif (is_string($rawSuggestions)) {
-      $normalized = preg_replace('/\r\n?|\n/', "\n", trim($rawSuggestions));
-      if ($normalized !== '') {
-  if (preg_match_all('/(?:^|\n)\s*(?:\d+[\.)]|[-\*•])\s*(.+?)(?=(?:\n\s*(?:\d+[\.)]|[-\*•])\s*)|\z)/s', $normalized, $matches)) {
-          foreach ($matches[1] as $item) {
-            $trimmed = trim(preg_replace('/\s+/', ' ', $item));
-            if ($trimmed !== '') {
-              $suggestions[] = $trimmed;
-            }
-          }
-        }
-
-        if (empty($suggestions)) {
-          $maybeList = preg_split('/\n+|(?<=\.)\s+(?=[A-Z])/', $normalized) ?: [];
-          foreach ($maybeList as $item) {
-            $trimmed = trim($item);
-            if ($trimmed !== '') {
-              $suggestions[] = $trimmed;
-            }
-          }
-        }
-
-        if (empty($suggestions)) {
-          $suggestions[] = $normalized;
-        }
+  $rawSuggestions = $sessionData['suggestions'];
+  if (is_array($rawSuggestions)) {
+    foreach ($rawSuggestions as $item) {
+      $trimmed = trim((string) $item);
+      if ($trimmed !== '') {
+        $suggestions[] = preg_replace('/\s+/', ' ', $trimmed);
       }
     }
+  } elseif (is_string($rawSuggestions)) {
+    $normalized = preg_replace('/\r\n?|\n/', "\n", trim($rawSuggestions));
+    if ($normalized !== '') {
+      if (preg_match_all('/(?:^|\n)\s*(?:\d+[\.)]|[-\*•])\s*(.+?)(?=(?:\n\s*(?:\d+[\.)]|[-\*•])\s*)|\z)/s', $normalized, $matches)) {
+        foreach ($matches[1] as $item) {
+          $clean = trim(preg_replace('/\s+/', ' ', $item));
+          if ($clean !== '') {
+            $suggestions[] = $clean;
+          }
+        }
+      }
+
+      if (empty($suggestions)) {
+        $maybeList = preg_split('/\n+|(?<=\.)\s+(?=[A-Z])/', $normalized) ?: [];
+        foreach ($maybeList as $item) {
+          $trimmed = trim($item);
+          if ($trimmed !== '') {
+            $suggestions[] = preg_replace('/\s+/', ' ', $trimmed);
+          }
+        }
+      }
+
+      if (empty($suggestions)) {
+        $suggestions[] = preg_replace('/\s+/', ' ', $normalized);
+      }
+    }
+  }
+}
+
+if (!empty($suggestions)) {
+  $mainSuggestion = trim((string) array_shift($suggestions));
+  if ($mainSuggestion === '') {
+    $mainSuggestion = null;
+  }
+
+  foreach ($suggestions as $item) {
+    $trimmed = trim((string) $item);
+    if ($trimmed !== '') {
+      $improvementItems[] = preg_replace('/\s+/', ' ', $trimmed);
+    }
+  }
+
+  if ($mainSuggestion === null && !empty($improvementItems)) {
+    $mainSuggestion = array_shift($improvementItems);
+  }
 }
 
 $userBlurt = null;
@@ -530,20 +551,34 @@ function e(string $value): string
             </span>
             Suggestions
           </div>
-          <?php if (!empty($suggestions)): ?>
-            <div class="space-y-2">
-              <?php foreach ($suggestions as $suggestion): ?>
-                <div class="bg-green-50 rounded-xl p-4 flex gap-2">
+          <?php if ($mainSuggestion !== null || !empty($improvementItems)): ?>
+            <div class="space-y-3">
+              <?php if ($mainSuggestion !== null): ?>
+                <div class="bg-green-50 rounded-xl p-4 flex gap-3">
                   <span class="text-green-500 text-lg mt-1" aria-hidden="true">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                       <path d="M8.14132 20.6086L18.1416 10.6084L13.3916 5.85845L3.3914 15.8587C3.25373 15.9965 3.15593 16.1691 3.10839 16.358L2 22L7.64093 20.8916C7.83033 20.8443 8.00358 20.7463 8.14132 20.6086ZM21.3699 7.38006C21.7733 6.97646 22 6.42914 22 5.85845C22 5.28776 21.7733 4.74044 21.3699 4.33684L19.6632 2.63014C19.2596 2.22666 18.7122 2 18.1416 2C17.5709 2 17.0235 2.22666 16.6199 2.63014L14.9132 4.33684L19.6632 9.08676L21.3699 7.38006Z" fill="#1F2024"/>
                     </svg>
                   </span>
-                  <div class="text-sm text-gray-700">
-                    <?= e($suggestion) ?>
+                  <div>
+                    <div class="text-xs font-semibold uppercase tracking-wide text-green-500 mb-1">Main suggestion</div>
+                    <div class="text-sm text-gray-700">
+                      <?= e($mainSuggestion) ?>
+                    </div>
                   </div>
                 </div>
-              <?php endforeach; ?>
+              <?php endif; ?>
+
+              <?php if (!empty($improvementItems)): ?>
+                <div class="rounded-xl border border-green-200 bg-white p-4">
+                  <div class="text-xs font-semibold uppercase tracking-wide text-green-500 mb-2">Things to improve</div>
+                  <ol class="list-decimal list-inside space-y-2 text-sm text-gray-700">
+                    <?php foreach ($improvementItems as $item): ?>
+                      <li><?= e($item) ?></li>
+                    <?php endforeach; ?>
+                  </ol>
+                </div>
+              <?php endif; ?>
             </div>
           <?php else: ?>
             <div class="bg-blue-50 rounded-xl p-4 text-sm text-blue-600">

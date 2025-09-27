@@ -131,7 +131,11 @@ Always respond ONLY as a single valid JSON object in this exact structure:
       "correction": "A short correction that states the fact accurately."
     }
   ],
-  "suggestions": "One to three short and practical suggestions to help the user study or recall correctly next time."
+		"suggestions": [
+			"A single-sentence main suggestion summarizing the learner\'s priority focus.",
+		"Concrete improvement step #1.",
+		"Concrete improvement step #2."
+	]
 }
 
 Instructions:
@@ -141,9 +145,10 @@ Instructions:
 4. Highlight the user’s correct knowledge in `correctStatements`. Provide 1-5 precise sentences when possible; if nothing was correct, return an empty array.
 5. If there are no factual errors, return an empty array for `mistakes`.
 6. Make the `overallFeedback` brief — no more than two sentences.
-7. Keep suggestions constructive and focused on improving understanding or study habits.
-8. The `shortTopicTitle` must be a clean, human-readable label derived from the provided topic, max 4 words, no quotes, no emojis.
-9. Ensure the response is strictly valid JSON with no additional text, no markdown, and no commentary outside the JSON.')
+7. Return `suggestions` as an array where the FIRST element is the main suggestion sentence and the remaining elements (1-5 items) are concrete improvement steps. Omit extra commentary.
+8. Keep suggestions constructive and focused on improving understanding or study habits.
+9. The `shortTopicTitle` must be a clean, human-readable label derived from the provided topic, max 4 words, no quotes, no emojis.
+10. Ensure the response is strictly valid JSON with no additional text, no markdown, and no commentary outside the JSON.')
 			->generateContent(
 				new TextPart($prompt),
 			);
