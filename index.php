@@ -126,7 +126,7 @@ $user_nickname = $_SESSION['nickname'] ?? 'Learner';
 
       <!-- Bottom Navigation (sticks to bottom on mobile, absolute overlay styling on desktop) -->
       <footer
-        class="mt-auto relative border-t border-gray-200 pb-[calc(0.25rem+env(safe-area-inset-bottom))] h-28 md:absolute md:bottom-0 md:left-0 md:right-0 md:rounded-b-2xl bg-white"
+        class="mt-auto relative border-t border-gray-200 safe-area-bottom h-28 md:absolute md:bottom-0 md:left-0 md:right-0 md:rounded-b-2xl bg-white"
       >
         <nav
           class="relative flex justify-around items-center h-full pt-2 pb-6 text-gray-500"
