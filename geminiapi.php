@@ -104,14 +104,17 @@ function generateGeminiFeedback(string $topic, string $blurt): array
 		throw new RuntimeException('GEMINI_API_KEY environment variable is not set.');
 	}
 
-	try {
-		$client = new Client($apiKey);
+	$client = new Client($apiKey);
+	$prompt = sprintf('Topic: %s | Blurt: %s', $topic, $blurt);
+	$maxAttempts = 3;
+	$attempt = 0;
+	$baseDelayMicros = 500000; // 0.5 seconds
 
-		$prompt = sprintf('Topic: %s | Blurt: %s', $topic, $blurt);
-
-		$response = $client->withV1BetaVersion()
-			->generativeModel(ModelName::GEMINI_2_5_FLASH)
-			->withSystemInstruction('You are Blurt It, an AI insight validator for a blurting-based learning app.
+	while (true) {
+		try {
+			$response = $client->withV1BetaVersion()
+				->generativeModel(ModelName::GEMINI_2_5_FLASH)
+				->withSystemInstruction('You are Blurt It, an AI insight validator for a blurting-based learning app.
 Always respond ONLY as a single valid JSON object in this exact structure:
 
 {
@@ -141,24 +144,55 @@ Instructions:
 				new TextPart($prompt),
 			);
 
-		$raw = trim($response->text());
-		if ($raw === '') {
-			throw new RuntimeException('Gemini returned an empty response.');
-		}
+			$raw = trim($response->text());
+			if ($raw === '') {
+				throw new RuntimeException('Gemini returned an empty response.');
+			}
 
-		$normalized = normalizeGeminiJsonString($raw);
-		try {
-			$data = json_decode($normalized, true, 512, JSON_THROW_ON_ERROR);
-		} catch (JsonException $jsonException) {
-			throw new RuntimeException('Gemini request failed: ' . $jsonException->getMessage(), (int) $jsonException->getCode(), $jsonException);
+			$normalized = normalizeGeminiJsonString($raw);
+			try {
+				$data = json_decode($normalized, true, 512, JSON_THROW_ON_ERROR);
+			} catch (JsonException $jsonException) {
+				throw new RuntimeException('Gemini request failed: ' . $jsonException->getMessage(), (int) $jsonException->getCode(), $jsonException);
+			}
+			return [
+				'raw' => $normalized,
+				'data' => $data,
+			];
+		} catch (Throwable $e) {
+			$attempt++;
+			if ($attempt >= $maxAttempts || !shouldRetryGeminiRequest($e)) {
+				throw new RuntimeException('Gemini request failed: ' . $e->getMessage(), (int) $e->getCode(), $e);
+			}
+			usleep((int) ($baseDelayMicros * $attempt));
 		}
-		return [
-			'raw' => $normalized,
-			'data' => $data,
-		];
-	} catch (Throwable $e) {
-		throw new RuntimeException('Gemini request failed: ' . $e->getMessage(), (int) $e->getCode(), $e);
 	}
+}
+
+function shouldRetryGeminiRequest(Throwable $e): bool
+{
+	$message = $e->getMessage() ?? '';
+	if ($message === '') {
+		return false;
+	}
+
+	$retrySignals = [
+		'UNAVAILABLE',
+		'503',
+		'RESOURCE_EXHAUSTED',
+		'429',
+		'timeout',
+		'timed out',
+		'temporarily unavailable',
+	];
+
+	foreach ($retrySignals as $signal) {
+		if (stripos($message, $signal) !== false) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 if (php_sapi_name() === 'cli' && isset($argv) && basename($argv[0]) === basename(__FILE__)) {
