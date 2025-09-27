@@ -1,12 +1,69 @@
-<?php 
+<?php
+declare(strict_types=1);
+
 // test sessions here
 $testSessionCount = 0;
 
 include('session.php');
 include('config.php');
 
-$user_id = $_SESSION['id'];
+$user_id = (int) $_SESSION['id'];
 
+$sessions = [];
+$error = null;
+
+$stmt = mysqli_prepare(
+    $link,
+    'SELECT sessionid, session_topicName, session_score, time_created FROM session_history WHERE userid = ? ORDER BY time_created DESC, sessionid DESC'
+);
+
+if ($stmt === false) {
+    $error = 'Unable to load your sessions right now.';
+} else {
+    mysqli_stmt_bind_param($stmt, 'i', $user_id);
+    if (mysqli_stmt_execute($stmt)) {
+        mysqli_stmt_bind_result($stmt, $sessionId, $topicName, $sessionScore, $timeCreated);
+        while (mysqli_stmt_fetch($stmt)) {
+            $sessions[] = [
+                'id' => (int) $sessionId,
+                'topic' => trim((string) $topicName) !== '' ? trim((string) $topicName) : 'Untitled session',
+                'score' => $sessionScore !== null ? (int) $sessionScore : null,
+                'time' => $timeCreated,
+            ];
+        }
+    } else {
+        $error = 'Unable to load your sessions right now.';
+    }
+    mysqli_stmt_close($stmt);
+}
+
+function e(string $value): string
+{
+    return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+}
+
+function formatTimestamp(?string $value): ?string
+{
+    if ($value === null || $value === '') {
+        return null;
+    }
+    $timestamp = strtotime($value);
+    return $timestamp !== false ? date('M j, Y g:i A', $timestamp) : null;
+}
+
+function scoreClass(?int $score): string
+{
+    if ($score === null) {
+        return 'text-gray-500';
+    }
+    if ($score < 50) {
+        return 'text-red-500';
+    }
+    if ($score < 80) {
+        return 'text-orange-500';
+    }
+    return 'text-green-500';
+}
 ?>
 
 
@@ -63,101 +120,52 @@ $user_id = $_SESSION['id'];
         <h1 class="animate__animated animate__fadeInDown text-2xl text-center font-bold text-gray-900 mb-8">
           Previous Sessions
         </h1>
-<?php if ($testSessionCount == 0) {
-    echo '<!-- CNLY SHOW THIS IF THEY DO NOT HAVE ANY BLURTS YET!-->
+
+        <?php if ($error !== null): ?>
+          <div class="p-4 bg-red-100 border border-red-200 text-red-700 rounded-xl text-sm mb-4">
+            <?= e($error) ?>
+          </div>
+        <?php endif; ?>
+
+        <?php if (empty($sessions)): ?>
           <div class="flex flex-col items-center justify-center h-full text-center">
-            <h1 class="text-xl font-extrabold">Nothing here. For now.</h1>
-            <p class="text-gray-900">This is where you find your sessions.</p>
-            <a href="index.php" class="mt-2 w-full py-3 bg-blue-600 border-2 border-blue-500 text-white rounded-xl hover:bg-blue-50 active:bg-blue-100 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Start a new Session</a>
-          </div>
-        ';
-  } elseif ($testSessionCount == 1) { 
-    echo '
-        <div class="space-y-3">
-          <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-            <a href="result.php" class="block">
-              <div class="flex items-center justify-between">
-                <div class="flex-1">
-                  <h3 class="font-semibold text-gray-900 text-base mb-1">Cancer</h3>
-                  <p class="text-sm text-gray-500">September 24, 2025</p>
-                </div>
-                <div class="flex items-center space-x-3">
-                  <div class="flex flex-col items-center">
-                    <span class="text-2xl font-bold text-red-500">9%</span>
-                    <span class="text-xs text-gray-400">Score</span>
-                  </div>
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </div>
+            <h2 class="text-xl font-extrabold">Nothing here. For now.</h2>
+            <p class="text-gray-600 mt-2">This is where your blurting sessions will appear.</p>
+            <a href="index.php" class="mt-4 w-full py-3 bg-blue-600 border-2 border-blue-500 text-white rounded-xl hover:bg-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              Start a new session
             </a>
           </div>
-
-          <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-            <a href="#" class="block">
-              <div class="flex items-center justify-between">
-                <div class="flex-1">
-                  <h3 class="font-semibold text-gray-900 text-base mb-1">Climate Change</h3>
-                  <p class="text-sm text-gray-500">September 23, 2025</p>
-                </div>
-                <div class="flex items-center space-x-3">
-                  <div class="flex flex-col items-center">
-                    <span class="text-2xl font-bold text-green-500">85%</span>
-                    <span class="text-xs text-gray-400">Score</span>
+        <?php else: ?>
+          <div class="space-y-3">
+            <?php foreach ($sessions as $session): ?>
+              <?php
+                $score = $session['score'];
+                $scoreLabel = $score !== null ? $score . '%' : '—';
+                $scoreClass = scoreClass($score);
+                $recorded = formatTimestamp($session['time']) ?: 'Date unavailable';
+              ?>
+              <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                <a href="result.php?sessionid=<?= e((string) $session['id']) ?>" class="block">
+                  <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                      <h3 class="font-semibold text-gray-900 text-base mb-1"><?= e($session['topic']) ?></h3>
+                      <p class="text-sm text-gray-500"><?= e($recorded) ?></p>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                      <div class="flex flex-col items-center">
+                        <span class="text-2xl font-bold <?= e($scoreClass) ?>"><?= e($scoreLabel) ?></span>
+                        <span class="text-xs text-gray-400">Score</span>
+                      </div>
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
                   </div>
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
+                </a>
               </div>
-            </a>
+            <?php endforeach; ?>
           </div>
-
-          <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-            <a href="#" class="block">
-              <div class="flex items-center justify-between">
-                <div class="flex-1">
-                  <h3 class="font-semibold text-gray-900 text-base mb-1">Solar System</h3>
-                  <p class="text-sm text-gray-500">September 22, 2025</p>
-                </div>
-                <div class="flex items-center space-x-3">
-                  <div class="flex flex-col items-center">
-                    <span class="text-2xl font-bold text-orange-500">67%</span>
-                    <span class="text-xs text-gray-400">Score</span>
-                  </div>
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </div>
-            </a>
-          </div>
-
-          <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-            <a href="#" class="block">
-              <div class="flex items-center justify-between">
-                <div class="flex-1">
-                  <h3 class="font-semibold text-gray-900 text-base mb-1">World War II</h3>
-                  <p class="text-sm text-gray-500">September 21, 2025</p>
-                </div>
-                <div class="flex items-center space-x-3">
-                  <div class="flex flex-col items-center">
-                    <span class="text-2xl font-bold text-green-500">92%</span>
-                    <span class="text-xs text-gray-400">Score</span>
-                  </div>
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </div>
-            </a>
-          </div>
-        </div>
-    ';
-  }
-
-        ?>  
+        <?php endif; ?>
       </main>
 
       <!-- Bottom Navigation (sticks to bottom on mobile, absolute overlay styling on desktop) -->

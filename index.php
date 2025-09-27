@@ -88,6 +88,7 @@ $user_id = $_SESSION['id'];
               placeholder="Enter your topic here"
               value=""
               class="w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 transition-shadow"
+              required
             />
           </div>
 
@@ -102,6 +103,7 @@ $user_id = $_SESSION['id'];
               name="knowledge"
               placeholder="Tell me everything you know!"
               class="flex-1 min-h-[12rem] px-4 py-3 border-2 border-gray-300 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-400 transition-shadow"
+              required
             ></textarea>
           </div>
 
@@ -112,9 +114,6 @@ $user_id = $_SESSION['id'];
             Submit
           </button>
         </form>
-        <div class="flex justify-center">
-          <a class="mt-2 w-full md:w-auto py-3 px-6 bg-white border-2 border-blue-500 text-blue-500 font-bold rounded-xl hover:bg-blue-50 active:bg-blue-100 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 text-center" href="result.php">Results (DEV)</a>
-        </div>
       </main>
 
       <!-- Bottom Navigation (sticks to bottom on mobile, absolute overlay styling on desktop) -->
@@ -197,59 +196,6 @@ $user_id = $_SESSION['id'];
       </footer>
     </div>
 
-    <!-- Keep only original form submission demo script -->
-    <script>
-      // Simple JavaScript to show a custom message on form submission for demo purposes.
-      document
-        .getElementById("blurtForm")
-        .addEventListener("submit", (event) => {
-          event.preventDefault(); // Prevents the page from reloading
-
-          // Remove existing message box if it exists
-          const existingBox = document.querySelector(".custom-message-box");
-          if (existingBox) {
-            existingBox.remove();
-          }
-
-          // Create a custom message box
-          const messageBox = document.createElement("div");
-          messageBox.textContent = "Form submitted successfully!";
-          messageBox.className = "custom-message-box";
-          messageBox.style.position = "fixed";
-          messageBox.style.top = "20px";
-          messageBox.style.left = "50%";
-          messageBox.style.transform = "translateX(-50%)";
-          messageBox.style.padding = "12px 24px";
-          messageBox.style.backgroundColor = "#2563eb"; // blue-600
-          messageBox.style.color = "white";
-          messageBox.style.borderRadius = "8px";
-          messageBox.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
-          messageBox.style.zIndex = "1000";
-          messageBox.style.opacity = "0";
-          messageBox.style.transition =
-            "opacity 0.3s ease-in-out, top 0.3s ease-in-out";
-
-          document.body.appendChild(messageBox);
-
-          // Animate in
-          setTimeout(() => {
-            messageBox.style.opacity = "1";
-            messageBox.style.top = "40px";
-          }, 10);
-
-          // Animate out and remove after a delay
-          setTimeout(() => {
-            messageBox.style.opacity = "0";
-            messageBox.style.top = "20px";
-            setTimeout(() => {
-              if (document.body.contains(messageBox)) {
-                document.body.removeChild(messageBox);
-              }
-            }, 300);
-          }, 2500);
-        });
-    </link>
-
   <script>
 document.addEventListener('DOMContentLoaded', function () {
  window.AddToHomeScreenInstance = window.AddToHomeScreen({
@@ -263,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                                          // Required.
   assetUrl: 'https://cdn.jsdelivr.net/gh/philfung/add-to-homescreen@3.4/dist/assets/img/',  // Link to directory of library image assets.
 
-  maxModalDisplayCount: -1,                              // If set, the modal will only show this many times.
+  maxModalDisplayCount: 0,                              // If set, the modal will only show this many times.
                                                          // [Optional] Default: -1 (no limit).  (Debugging: Use this.clearModalDisplayCount() to reset the count)
   displayOptions:{ showMobile: true, showDesktop: true }, // show on mobile/desktop [Optional] Default: show everywhere
   allowClose: true, // allow the user to close the modal by tapping outside of it [Optional. Default: true]

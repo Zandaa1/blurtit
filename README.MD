@@ -18,6 +18,19 @@ The **AI-Powered Blurting Companion** is a capstone project designed to support 
 - **AI Integration**: gpt-oss-20b / Gemini API / OpenAI API  
 - **Environment**: XAMPP for development and deployment  
 
+## Gemini API configuration
+- Set the `GEMINI_API_KEY` environment variable when running PHP. On Windows PowerShell:
+	```powershell
+	setx GEMINI_API_KEY "your-real-api-key"
+	```
+	Restart the shell or web server after setting it.
+- Alternatively, copy `.env.example` to `.env` at the project root and add your key:
+	```
+	GEMINI_API_KEY=your-real-api-key
+	```
+	The application automatically reads this file if the environment variable is missing.
+- After pulling vendor updates, double-check that `vendor/gemini-api-php/client/src/Resources/ModelName.php` includes constants for the Gemini models you intend to call. If newer options are missing (for example `public const GEMINI_2_5_FLASH = 'gemini-2.5-flash';` or `public const GEMINI_2_5_PRO = 'gemini-2.5-pro';`), add them to that file so the client can target the correct model identifier.
+
 ## Hardware Requirements
 - CPU: Intel i5 8th Gen / AMD Ryzen 5 (or higher)  
 - RAM: 8GB (16GB recommended)  
