@@ -3,6 +3,7 @@ include('session.php');
 include('config.php');
 
 $user_id = $_SESSION['id'];
+$user_nickname = $_SESSION['nickname'] ?? 'Learner';
 
 ?>
 
@@ -13,15 +14,13 @@ $user_id = $_SESSION['id'];
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Blurt It! App UI</title>
     <link rel="manifest" crossorigin="use-credentials" href="manifest.json" />
-</head>
-
-        <!-- Animate.css -->
-       <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
-  />
-    <!-- Tailwind CSS CDN -->
-    <link rel="stylesheet" href="css/output.css">
+    <!-- Animate.css -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="css/output.css" />
     <!-- Google Fonts for Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -47,6 +46,21 @@ $user_id = $_SESSION['id'];
       /* Safe area padding for devices with notches */
       body {
         padding-top: env(safe-area-inset-top);
+      }
+
+      .loading-spinner {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 9999px;
+        border: 4px solid rgba(59, 130, 246, 0.2);
+        border-top-color: #2563eb;
+        animation: spin 0.8s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
       }
     </style>
   </head>
@@ -188,8 +202,49 @@ $user_id = $_SESSION['id'];
           </div>
         </div>
       </footer>
+      <div
+        id="submit-loading"
+        class="hidden absolute inset-0 bg-white/85 backdrop-blur-sm z-50 flex flex-col items-center justify-center px-6 text-center"
+        role="status"
+        aria-live="polite"
+      >
+        <div class="loading-spinner mb-4" aria-hidden="true"></div>
+        <p class="text-base font-semibold text-gray-700">Checking your blurt…</p>
+        <p class="text-sm text-gray-500 mt-1">Hang tight while we analyze your response.</p>
+      </div>
     </div>
 
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('blurtForm');
+        const loadingOverlay = document.getElementById('submit-loading');
+        if (!form) {
+          return;
+        }
 
+        form.addEventListener(
+          'submit',
+          function () {
+            if (loadingOverlay) {
+              loadingOverlay.classList.remove('hidden');
+            }
+
+            const submitButton = form.querySelector('button[type="submit"]');
+            if (submitButton) {
+              submitButton.disabled = true;
+              submitButton.classList.add('opacity-70', 'cursor-not-allowed');
+              submitButton.textContent = 'Submitting…';
+            }
+
+            const inputs = form.querySelectorAll('input, textarea');
+            inputs.forEach(function (element) {
+              element.setAttribute('readonly', 'readonly');
+              element.classList.add('opacity-80');
+            });
+          },
+          { once: true }
+        );
+      });
+    </script>
   </body>
 </html>
