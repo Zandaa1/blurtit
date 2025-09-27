@@ -387,7 +387,7 @@ function e(string $value): string
         class="flex-1 flex flex-col overflow-y-auto px-4 pt-10 pb-40 md:px-6 md:pt-12 md:pb-32"
       >
         <?php if (!empty($errors)): ?>
-          <div class="mb-8 flex flex-col items-center gap-3 text-center">
+          <div class="flex flex-col items-center justify-center h-full text-center">
             <?php foreach ($errors as $error): ?>
               <div class="w-full max-w-md p-4 bg-red-100 border border-red-200 text-red-700 rounded-xl text-sm">
                 <?= e($error) ?>
