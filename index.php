@@ -132,7 +132,7 @@ $user_nickname = $_SESSION['nickname'] ?? 'Learner';
               <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01" />
             </svg>
-            This content was generated using AI and may contain inaccuracies. Please verify important information.
+            Content generated using Blurt It! may contain inaccuracies. Please verify important information.
           </div>
 
         </form>
