@@ -121,6 +121,9 @@ Always respond ONLY as a single valid JSON object in this exact structure:
   "shortTopicTitle": "A concise version of the topic title, no more than 4 words, suitable for small UI labels.",
   "accuracyRating": <integer from 0 to 100>,
   "overallFeedback": "A short, honest, but constructive message about the overall correctness of the blurt.",
+	"correctStatements": [
+		"One-sentence summaries of facts the user stated correctly."
+	],
   "mistakes": [
     {
       "incorrectPhrase": "Exact text copied from the user’s blurt that is factually wrong.",
@@ -135,11 +138,12 @@ Instructions:
 1. Focus ONLY on factual correctness about the given topic. Ignore grammar, spelling, and delivery.
 2. Quote the user’s words exactly in each `incorrectPhrase`.
 3. Do not repeat identical mistakes more than once.
-4. If there are no factual errors, return an empty array for `mistakes`.
-5. Make the `overallFeedback` brief — no more than two sentences.
-6. Keep suggestions constructive and focused on improving understanding or study habits.
-7. The `shortTopicTitle` must be a clean, human-readable label derived from the provided topic, max 4 words, no quotes, no emojis.
-8. Ensure the response is strictly valid JSON with no additional text, no markdown, and no commentary outside the JSON.')
+4. Highlight the user’s correct knowledge in `correctStatements`. Provide 1-5 precise sentences when possible; if nothing was correct, return an empty array.
+5. If there are no factual errors, return an empty array for `mistakes`.
+6. Make the `overallFeedback` brief — no more than two sentences.
+7. Keep suggestions constructive and focused on improving understanding or study habits.
+8. The `shortTopicTitle` must be a clean, human-readable label derived from the provided topic, max 4 words, no quotes, no emojis.
+9. Ensure the response is strictly valid JSON with no additional text, no markdown, and no commentary outside the JSON.')
 			->generateContent(
 				new TextPart($prompt),
 			);

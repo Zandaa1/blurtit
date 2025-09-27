@@ -18,14 +18,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($topic === '' || $knowledge === '') {
         $errors[] = 'Topic and blurt text are required.';
-    } else {
-        try {
-            $geminiResult = generateGeminiFeedback($topic, $knowledge);
+  } else {
+    try {
+      $geminiResult = generateGeminiFeedback($topic, $knowledge);
       $sessionData = $geminiResult['data'];
       $rawJson = $geminiResult['raw'];
 
-            $sessionData['userBlurt'] = trim($knowledge);
-            $sessionData['topic'] = trim($topic);
+      $sessionData['userBlurt'] = trim($knowledge);
+      $sessionData['topic'] = trim($topic);
 
       try {
         $rawJson = json_encode($sessionData, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -33,52 +33,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         throw new RuntimeException('Failed to encode the blurting session: ' . $encodeException->getMessage(), (int) $encodeException->getCode(), $encodeException);
       }
 
-            $sessionScore = null;
-            if (isset($sessionData['accuracyRating']) && is_numeric($sessionData['accuracyRating'])) {
-                $sessionScore = max(0, min(100, (int) $sessionData['accuracyRating']));
-            }
+      $sessionScore = null;
+      if (isset($sessionData['accuracyRating']) && is_numeric($sessionData['accuracyRating'])) {
+        $sessionScore = max(0, min(100, (int) $sessionData['accuracyRating']));
+      }
 
-            $shortTopic = trim((string) ($sessionData['shortTopicTitle'] ?? $topic));
-            if ($shortTopic === '') {
-                $shortTopic = $topic;
-            }
+      $shortTopic = trim((string) ($sessionData['shortTopicTitle'] ?? $topic));
+      if ($shortTopic === '') {
+        $shortTopic = $topic;
+      }
 
-            if ($sessionScore === null) {
-                $stmt = mysqli_prepare(
-                    $link,
-                    'INSERT INTO session_history (userid, sessionJSON, time_created, session_score, session_topicName) VALUES (?, ?, NOW(), NULL, ?)' // phpcs:ignore
-                );
-                if ($stmt === false) {
-                    throw new RuntimeException('Database error during preparation: ' . mysqli_error($link));
-                }
-                mysqli_stmt_bind_param($stmt, 'iss', $user_id, $rawJson, $shortTopic);
-            } else {
-                $stmt = mysqli_prepare(
-                    $link,
-                    'INSERT INTO session_history (userid, sessionJSON, time_created, session_score, session_topicName) VALUES (?, ?, NOW(), ?, ?)' // phpcs:ignore
-                );
-                if ($stmt === false) {
-                    throw new RuntimeException('Database error during preparation: ' . mysqli_error($link));
-                }
-                mysqli_stmt_bind_param($stmt, 'isis', $user_id, $rawJson, $sessionScore, $shortTopic);
-            }
+      if ($sessionScore === null) {
+        $stmt = mysqli_prepare(
+          $link,
+          'INSERT INTO session_history (userid, sessionJSON, time_created, session_score, session_topicName) VALUES (?, ?, NOW(), NULL, ?)' // phpcs:ignore
+        );
+        if ($stmt === false) {
+          throw new RuntimeException('Database error during preparation: ' . mysqli_error($link));
+        }
+        mysqli_stmt_bind_param($stmt, 'iss', $user_id, $rawJson, $shortTopic);
+      } else {
+        $stmt = mysqli_prepare(
+          $link,
+          'INSERT INTO session_history (userid, sessionJSON, time_created, session_score, session_topicName) VALUES (?, ?, NOW(), ?, ?)' // phpcs:ignore
+        );
+        if ($stmt === false) {
+          throw new RuntimeException('Database error during preparation: ' . mysqli_error($link));
+        }
+        mysqli_stmt_bind_param($stmt, 'isis', $user_id, $rawJson, $sessionScore, $shortTopic);
+      }
 
-            if (!mysqli_stmt_execute($stmt)) {
-                $message = mysqli_stmt_error($stmt) ?: 'Unknown database error.';
-                mysqli_stmt_close($stmt);
-                throw new RuntimeException('Failed to save the blurting session: ' . $message);
-            }
+      if (!mysqli_stmt_execute($stmt)) {
+        $message = mysqli_stmt_error($stmt) ?: 'Unknown database error.';
+        mysqli_stmt_close($stmt);
+        throw new RuntimeException('Failed to save the blurting session: ' . $message);
+      }
 
-            $sessionId = mysqli_insert_id($link);
-            mysqli_stmt_close($stmt);
+      $sessionId = mysqli_insert_id($link);
+      mysqli_stmt_close($stmt);
 
-            header('Location: result.php?sessionid=' . $sessionId);
-            exit();
+      header('Location: result.php?sessionid=' . $sessionId);
+      exit();
     } catch (Throwable $e) {
       $errors[] = getProcessingErrorMessage($e);
       error_log('Gemini processing failed: ' . $e->getMessage());
     }
-    }
+  }
 }
 
 if (isset($_GET['sessionid'])) {
@@ -200,82 +200,94 @@ if ($sessionData !== null && isset($sessionData['suggestions'])) {
 
 $userBlurt = null;
 $correctStatements = [];
-if ($sessionData !== null && isset($sessionData['userBlurt']) && is_string($sessionData['userBlurt'])) {
-  $userBlurt = trim($sessionData['userBlurt']);
+
+if ($sessionData !== null) {
+    if (isset($sessionData['userBlurt']) && is_string($sessionData['userBlurt'])) {
+        $userBlurt = trim($sessionData['userBlurt']);
+    }
+
+    if (isset($sessionData['correctStatements']) && is_array($sessionData['correctStatements'])) {
+        foreach ($sessionData['correctStatements'] as $item) {
+            $trimmed = trim((string) $item);
+            if ($trimmed !== '' && !in_array($trimmed, $correctStatements, true)) {
+                $correctStatements[] = $trimmed;
+            }
+        }
+    }
 }
 
-if ($userBlurt !== null && $userBlurt !== '') {
-  $normalizedBlurt = preg_replace('/\r\n?|\n/', "\n", $userBlurt);
-  $lines = $normalizedBlurt === null ? [$userBlurt] : (preg_split('/\n+/', $normalizedBlurt) ?: [$userBlurt]);
+if ($userBlurt !== null && $userBlurt !== '' && empty($correctStatements)) {
+    $normalizedBlurt = preg_replace('/\r\n?|\n/', "\n", $userBlurt);
+    $lines = $normalizedBlurt === null ? [$userBlurt] : (preg_split('/\n+/', $normalizedBlurt) ?: [$userBlurt]);
 
-  $statements = [];
-  foreach ($lines as $line) {
-    $line = trim((string) $line);
-    if ($line === '') {
-      continue;
-    }
-
-    $line = preg_replace('/^\s*(?:[-\*•]\s+|\d+[\.)]\s+)/', '', $line) ?? $line;
-    $sentenceParts = preg_split('/(?<=[.!?])\s+/', $line) ?: [];
-
-    if (count($sentenceParts) > 1) {
-      foreach ($sentenceParts as $part) {
-        $part = trim($part);
-        if ($part !== '') {
-          $statements[] = $part;
+    $statements = [];
+    foreach ($lines as $line) {
+        $line = trim((string) $line);
+        if ($line === '') {
+            continue;
         }
-      }
-    } else {
-      $statements[] = $line;
-    }
-  }
 
-  if (empty($statements)) {
-    $statements = [$userBlurt];
-  }
+        $line = preg_replace('/^\s*(?:[-\*•]\s+|\d+[\.)]\s+)/', '', $line) ?? $line;
+        $sentenceParts = preg_split('/(?<=[.!?])\s+/', $line) ?: [];
 
-  $incorrectPhrases = [];
-  foreach ($mistakes as $mistake) {
-    if ($mistake['incorrectPhrase'] !== '') {
-      $incorrectPhrases[] = $mistake['incorrectPhrase'];
-    }
-  }
-
-  foreach ($statements as $statement) {
-    $cleanStatement = preg_replace('/\s+/', ' ', trim($statement));
-    if ($cleanStatement === '') {
-      continue;
-    }
-
-    $containsMistake = false;
-    foreach ($incorrectPhrases as $phrase) {
-      $phrase = trim($phrase);
-      if ($phrase === '') {
-        continue;
-      }
-
-      if (function_exists('mb_stripos')) {
-        if (mb_stripos($cleanStatement, $phrase) !== false) {
-          $containsMistake = true;
-          break;
+        if (count($sentenceParts) > 1) {
+            foreach ($sentenceParts as $part) {
+                $part = trim($part);
+                if ($part !== '') {
+                    $statements[] = $part;
+                }
+            }
+        } else {
+            $statements[] = $line;
         }
-      } else {
-        if (stripos($cleanStatement, $phrase) !== false) {
-          $containsMistake = true;
-          break;
+    }
+
+    if (empty($statements)) {
+        $statements = [$userBlurt];
+    }
+
+    $incorrectPhrases = [];
+    foreach ($mistakes as $mistake) {
+        if ($mistake['incorrectPhrase'] !== '') {
+            $incorrectPhrases[] = $mistake['incorrectPhrase'];
         }
-      }
     }
 
-    if (!$containsMistake && !in_array($cleanStatement, $correctStatements, true)) {
-      $correctStatements[] = $cleanStatement;
-    }
-  }
+    foreach ($statements as $statement) {
+        $cleanStatement = preg_replace('/\s+/', ' ', trim($statement));
+        if ($cleanStatement === '') {
+            continue;
+        }
 
-  if (empty($incorrectPhrases) && empty($correctStatements)) {
-    $correctStatements = array_map(static fn ($value) => preg_replace('/\s+/', ' ', trim((string) $value)), $statements);
-    $correctStatements = array_values(array_filter($correctStatements, static fn ($value) => $value !== ''));
-  }
+        $containsMistake = false;
+        foreach ($incorrectPhrases as $phrase) {
+            $phrase = trim($phrase);
+            if ($phrase === '') {
+                continue;
+            }
+
+            if (function_exists('mb_stripos')) {
+                if (mb_stripos($cleanStatement, $phrase) !== false) {
+                    $containsMistake = true;
+                    break;
+                }
+            } else {
+                if (stripos($cleanStatement, $phrase) !== false) {
+                    $containsMistake = true;
+                    break;
+                }
+            }
+        }
+
+        if (!$containsMistake && !in_array($cleanStatement, $correctStatements, true)) {
+            $correctStatements[] = $cleanStatement;
+        }
+    }
+
+    if (empty($incorrectPhrases) && empty($correctStatements)) {
+        $correctStatements = array_map(static fn ($value) => preg_replace('/\s+/', ' ', trim((string) $value)), $statements);
+        $correctStatements = array_values(array_filter($correctStatements, static fn ($value) => $value !== ''));
+    }
 }
 
 $timeCreated = null;
@@ -488,7 +500,7 @@ function e(string $value): string
                   <path d="M18.0625 10.8125L12.0208 16.8542L8.9375 13.7708" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </span>
-              What You Got Right
+              Correct Answers
             </div>
             <div class="space-y-2">
               <?php foreach ($correctStatements as $statement): ?>
