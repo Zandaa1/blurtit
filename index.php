@@ -169,7 +169,7 @@ $user_id = $_SESSION['id'];
           class="absolute -top-10 md:-top-10 left-1/2 -translate-x-1/2 transform"
         >
           <div class="text-center">
-            <a href="index.php"
+            <a href="#"
               aria-label="Create new blurt"
               class="bg-blue-500 w-20 h-20 rounded-full flex items-center justify-center text-white shadow-lg shadow-blue-500/30 hover:bg-blue-600 transition-all active:scale-95"
             >
