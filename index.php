@@ -48,6 +48,10 @@ $user_nickname = $_SESSION['nickname'] ?? 'Learner';
         padding-top: env(safe-area-inset-top);
       }
 
+      .safe-area-bottom {
+        padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+      }
+
       .loading-spinner {
         width: 3rem;
         height: 3rem;
@@ -71,7 +75,7 @@ $user_nickname = $_SESSION['nickname'] ?? 'Learner';
     >
       <!-- Main Scrollable Content only-->
       <main
-        class="flex-1 flex flex-col overflow-y-auto px-4 pt-10 pb-40 md:px-6 md:pt-12 md:pb-32"
+        class="flex-1 flex flex-col overflow-y-auto px-4 pt-10 pb-13 md:px-6 md:pt-12 md:pb-32"
       >
         <h1 class="animate__animated animate__fadeInDown text-2xl text-center font-extrabold text-gray-900 mb-8">
           Welcome back, <?php echo htmlspecialchars($user_nickname); ?>!
@@ -95,7 +99,7 @@ $user_nickname = $_SESSION['nickname'] ?? 'Learner';
               name="topic"
               placeholder="Enter your topic here"
               value=""
-              class="w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 transition-shadow"
+              class="w-full px-4 py-3 border-2 rounded-xl border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-shadow"
               required
             />
           </div>
