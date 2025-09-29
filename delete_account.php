@@ -101,7 +101,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
             <?php endif; ?>
 
-            <div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+            <div class="animate__animated animate__fadeInLeft animate__delay-1s bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
                 <h2 class="text-lg font-semibold text-red-800 mb-3">🔴 What will be permanently deleted:</h2>
                 <ul class="text-red-700 space-y-2">
                     <li>• Your profile and account information</li>
@@ -111,7 +111,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </ul>
             </div>
 
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <div class="animate__animated animate__fadeInLeft animate__delay-2s bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
                 <p class="text-yellow-800 text-sm">
                     <strong>⚡ Important:</strong> Once deleted, your account cannot be recovered. 
                     All data will be permanently removed from our servers.
@@ -119,12 +119,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
 
             <form method="POST" class="space-y-4">
-                <div class="flex items-start">
+                <div class="animate__animated animate__fadeInLeft animate__delay-3s flex items-start">
                     <div class="flex items-center h-5">
                         <input id="confirm_delete" name="confirm_delete" type="checkbox" value="yes" required
                                class="focus:ring-red-500 h-4 w-4 text-red-600 border-gray-300 rounded">
                     </div>
-                    <div class="ml-3 text-sm">
+                    <div class="animate__animated animate__fadeInLeft animate__delay-3s ml-3 text-sm">
                         <label for="confirm_delete" class="font-medium text-gray-700">
                             I understand that this action is permanent and cannot be undone. 
                             I want to permanently delete my account and all associated data.
@@ -132,7 +132,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
                 </div>
 
-                <div class="flex space-x-3 pt-4">
+                <div class="animate__animated animate__fadeInUp flex space-x-3 pt-4">
                     <a href="profile.php" 
                        class="flex-1 py-3 px-4 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-colors text-center">
                         Cancel
